@@ -1,0 +1,245 @@
+@import "tailwindcss";
+
+/* ============================================================
+   Дизайн-токены — Фабрика мебели «Омега»
+   Источник: docs/design-system.md → «Резюме для разработчиков»
+   ============================================================ */
+:root {
+  /* Поверхности и фон */
+  --color-background: #fbf7f1;
+  --color-background-alt: #f3ebdf;
+  --color-surface: #ffffff;
+  --color-surface-sunken: #f6f0e7;
+
+  /* Текст */
+  --color-foreground: #2b2420;
+  --color-foreground-muted: #6b6058;
+
+  /* Границы */
+  --color-border: #e3d8c8;
+  --color-border-strong: #cbb99e;
+
+  /* CTA / primary */
+  --color-primary: #b5482f;
+  --color-primary-hover: #963b26;
+  --color-primary-foreground: #ffffff;
+  --color-primary-soft: #f5e2da;
+
+  /* Акценты */
+  --color-accent: #9c7a2e; /* латунь на светлых фонах */
+  --color-accent-2: #4a5d46; /* эко-зелёный, "массив берёзы" */
+  --color-brass-footer: #d9a54a; /* латунь на тёмных фонах (7.1:1 на dark) */
+
+  /* Тёмные секции */
+  --color-dark: #2a2118;
+  --color-dark-surface: #372b20;
+
+  /* Статусы */
+  --color-success: #3f7a4e;
+  --color-warning-text: #8a5e15;
+  --color-warning-soft: rgba(184, 130, 42, 0.12);
+  --color-destructive: #b23b2e;
+
+  /* Доступность */
+  --color-ring: #b5482f; /* непрозрачный, 2px solid + 2px offset */
+
+  /* Градиенты */
+  --gradient-amber: linear-gradient(135deg, #d9a54a 0%, #b5482f 55%, #7a3220 100%);
+  --gradient-brass-glow: radial-gradient(circle, rgba(217, 165, 74, 0.35) 0%, rgba(217, 165, 74, 0) 70%);
+  --gradient-dark-fade: linear-gradient(180deg, rgba(42, 33, 24, 0) 0%, #2a2118 100%);
+
+  /* Радиусы */
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+  --radius-full: 999px;
+
+  /* Тени */
+  --shadow-sm: 0 1px 2px rgba(43, 36, 32, 0.06), 0 1px 1px rgba(43, 36, 32, 0.04);
+  --shadow-md: 0 4px 16px rgba(43, 36, 32, 0.08), 0 2px 6px rgba(43, 36, 32, 0.05);
+  --shadow-lg: 0 16px 40px rgba(43, 36, 32, 0.14), 0 6px 16px rgba(43, 36, 32, 0.08);
+  --shadow-glow-amber: 0 0 0 1px rgba(156, 122, 46, 0.25), 0 8px 32px rgba(217, 165, 74, 0.25);
+
+  /* Spacing (4px base) */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --space-20: 80px;
+  --space-24: 96px;
+  --space-32: 128px;
+
+  /* Контейнер */
+  --container-max: 1360px;
+
+  /* Шрифты (переменные заполняются next/font в layout.tsx) */
+  --font-unbounded: "Unbounded", sans-serif;
+  --font-manrope: "Manrope", sans-serif;
+}
+
+@theme inline {
+  --color-background: var(--color-background);
+  --color-background-alt: var(--color-background-alt);
+  --color-surface: var(--color-surface);
+  --color-surface-sunken: var(--color-surface-sunken);
+
+  --color-foreground: var(--color-foreground);
+  --color-foreground-muted: var(--color-foreground-muted);
+
+  --color-border: var(--color-border);
+  --color-border-strong: var(--color-border-strong);
+
+  --color-primary: var(--color-primary);
+  --color-primary-hover: var(--color-primary-hover);
+  --color-primary-foreground: var(--color-primary-foreground);
+  --color-primary-soft: var(--color-primary-soft);
+
+  --color-accent: var(--color-accent);
+  --color-accent-2: var(--color-accent-2);
+  --color-brass-footer: var(--color-brass-footer);
+
+  --color-dark: var(--color-dark);
+  --color-dark-surface: var(--color-dark-surface);
+
+  --color-success: var(--color-success);
+  --color-warning-text: var(--color-warning-text);
+  --color-warning-soft: var(--color-warning-soft);
+  --color-destructive: var(--color-destructive);
+
+  --color-ring: var(--color-ring);
+
+  --radius-sm: var(--radius-sm);
+  --radius-md: var(--radius-md);
+  --radius-lg: var(--radius-lg);
+  --radius-xl: var(--radius-xl);
+  --radius-full: var(--radius-full);
+
+  --font-display: var(--font-unbounded);
+  --font-sans: var(--font-manrope);
+
+  --container-omega: var(--container-max);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--color-background);
+  color: var(--color-foreground);
+  font-family: var(--font-manrope), system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+h1, h2, h3, h4,
+.font-display {
+  font-family: var(--font-unbounded), "Manrope", system-ui, sans-serif;
+  letter-spacing: -0.01em;
+}
+
+/* Числа-счётчики и цены — табличные цифры (правка С7, Manrope без tabular-nums по умолчанию) */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Контейнер сайта */
+.container-omega {
+  max-width: var(--container-max);
+  margin-inline: auto;
+  padding-inline: 16px;
+}
+@media (min-width: 768px) {
+  .container-omega {
+    padding-inline: 24px;
+  }
+}
+@media (min-width: 1024px) {
+  .container-omega {
+    padding-inline: 40px;
+  }
+}
+
+/* Focus-ring доступный, непрозрачный (правка В2) */
+:focus-visible {
+  outline: 2px solid var(--color-ring);
+  outline-offset: 2px;
+}
+
+/* Скрытие скроллбара для marquee/горизонтальных лент, где это уместно */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Marquee — чистый CSS keyframes, GPU-композиция (§6 анимаций) */
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+.animate-marquee {
+  animation: marquee 30s linear infinite;
+  will-change: transform;
+}
+.animate-marquee:hover {
+  animation-play-state: paused;
+}
+
+/* Пульсация плавающей кнопки звонка — псевдоэлемент, transform+opacity only (правка С5) */
+@keyframes pulse-ring {
+  0% {
+    transform: scale(1);
+    opacity: 0.5;
+  }
+  100% {
+    transform: scale(1.4);
+    opacity: 0;
+  }
+}
+.animate-pulse-ring {
+  animation: pulse-ring 2s ease-out infinite;
+}
+
+/* Едва заметная пульсация латунного свечения за hero-заголовком/финальным CTA
+   (§6 анимаций: opacity 0.6↔0.85, 4s loop) — только opacity, GPU-композиция */
+@keyframes glow-pulse {
+  0%,
+  100% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 0.85;
+  }
+}
+.animate-glow-pulse {
+  animation: glow-pulse 4s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-marquee,
+  .animate-pulse-ring,
+  .animate-glow-pulse {
+    animation: none !important;
+  }
+  html {
+    scroll-behavior: auto;
+  }
+}
