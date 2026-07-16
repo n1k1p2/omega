@@ -1,3 +1,4 @@
+from django.db.models import Prefetch
 from django.utils import timezone
 from rest_framework import serializers
 
@@ -51,7 +52,15 @@ class ProductDetailSerializer(ProductListSerializer):
 
     def get_related(self, obj):
         related_qs = (
-            Product.objects.filter(category_id=obj.category_id)
+            Product.objects.select_related('category')
+            .prefetch_related(
+                Prefetch(
+                    'reviews',
+                    queryset=Review.objects.filter(status=Review.Status.APPROVED),
+                    to_attr='approved_reviews_prefetch',
+                ),
+            )
+            .filter(category_id=obj.category_id)
             .exclude(id=obj.id)
             .order_by('-sort_weight', 'id')[:4]
         )

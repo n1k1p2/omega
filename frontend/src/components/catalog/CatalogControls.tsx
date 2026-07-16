@@ -98,24 +98,30 @@ export function CatalogControls() {
         </select>
       </div>
 
-      {/* Mobile chips row */}
-      <div className="flex gap-2 overflow-x-auto no-scrollbar lg:hidden">
-        {BUDGET_CHIPS.map((b) => (
-          <Chip
-            key={b.label}
-            active={minPrice === String(b.min ?? "") && maxPrice === String(b.max ?? "")}
-            onClick={() => toggleBudget(b)}
-            className="shrink-0"
-          >
-            {b.label}
+      {/* Mobile chips row — правый fade-hint подсказывает, что ряд можно проскроллить (правка по UX-ревью) */}
+      <div className="relative lg:hidden">
+        <div className="flex gap-2 overflow-x-auto no-scrollbar">
+          {BUDGET_CHIPS.map((b) => (
+            <Chip
+              key={b.label}
+              active={minPrice === String(b.min ?? "") && maxPrice === String(b.max ?? "")}
+              onClick={() => toggleBudget(b)}
+              className="shrink-0"
+            >
+              {b.label}
+            </Chip>
+          ))}
+          <Chip active={isBestseller} onClick={() => updateParams({ bestseller: isBestseller ? undefined : "1" })} className="shrink-0">
+            Хиты
           </Chip>
-        ))}
-        <Chip active={isBestseller} onClick={() => updateParams({ bestseller: isBestseller ? undefined : "1" })} className="shrink-0">
-          Хиты
-        </Chip>
-        <Chip active={isNew} onClick={() => updateParams({ new: isNew ? undefined : "1" })} className="shrink-0">
-          Новинки
-        </Chip>
+          <Chip active={isNew} onClick={() => updateParams({ new: isNew ? undefined : "1" })} className="shrink-0">
+            Новинки
+          </Chip>
+        </div>
+        <div
+          className="pointer-events-none absolute inset-y-0 right-0 w-8 bg-gradient-to-l from-[var(--color-background)] to-transparent"
+          aria-hidden
+        />
       </div>
 
       {/* Mobile filters bottom sheet (только цена, правка К1) */}

@@ -14,10 +14,12 @@ import { useModals } from "@/context/ModalContext";
 import { useToast } from "@/context/ToastContext";
 
 const ELITE_SURCHARGE = 0.1;
-const ELITE_KEYWORDS = ["элит"];
 
 export function BuyBox({ product }: { product: Product }) {
-  const hasElite = product.description.toLowerCase().includes(ELITE_KEYWORDS[0]);
+  // Тумблер «Отделка „элит“ +10%» — только если в описании фабрики явно заявлена
+  // надбавка +10% (у части товаров «элит» упоминается без наценки)
+  const desc = product.description.toLowerCase();
+  const hasElite = desc.includes("элит") && /\+\s*10\s*%/.test(desc);
   const [selectedSize, setSelectedSize] = useState<string | undefined>(product.sizes[0]);
   const [selectedColor, setSelectedColor] = useState<string | undefined>(product.colors[0]);
   const [eliteSelected, setEliteSelected] = useState(false);

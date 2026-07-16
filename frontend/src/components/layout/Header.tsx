@@ -12,7 +12,7 @@ import { MobileMenu } from "./MobileMenu";
 import { CartBadge } from "./CartBadge";
 import { useCart } from "@/context/CartContext";
 import { useModals } from "@/context/ModalContext";
-import { SUPPORT_PHONE_TEL } from "@/lib/api";
+import { SUPPORT_PHONE, SUPPORT_PHONE_TEL } from "@/lib/api";
 import type { Category } from "@/types/catalog";
 
 export function Header({ categories }: { categories: Category[] }) {
@@ -153,7 +153,7 @@ export function Header({ categories }: { categories: Category[] }) {
               className="hidden h-11 items-center gap-1.5 rounded-[var(--radius-md)] px-2 text-sm font-semibold text-[var(--color-foreground)] hover:text-[var(--color-primary)] lg:flex"
             >
               <Phone size={18} />
-              <span className="hidden xl:inline">{SUPPORT_PHONE_TEL.replace("+7", "+7 ")}</span>
+              <span className="hidden xl:inline">{SUPPORT_PHONE}</span>
             </a>
 
             <button

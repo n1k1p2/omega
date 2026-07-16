@@ -53,6 +53,25 @@ class CallbackTests(APITestCase):
         self.assertIn('phone', response.data)
 
 
+class CallbackThrottleTests(APITestCase):
+    """Регресс на находку код-ревью №5: неограниченный флуд POST /callbacks/."""
+
+    def setUp(self):
+        from django.core.cache import cache
+        cache.clear()
+
+    def tearDown(self):
+        from django.core.cache import cache
+        cache.clear()
+
+    def test_callback_post_is_rate_limited(self):
+        payload = {'name': 'Иван', 'phone': '+7 900 000-00-00', 'comment': ''}
+        last_response = None
+        for _ in range(11):
+            last_response = self.client.post(reverse('callback-create'), payload, format='json')
+        self.assertEqual(last_response.status_code, status.HTTP_429_TOO_MANY_REQUESTS)
+
+
 class OrderCreateTests(APITestCase):
     def setUp(self):
         self.cat = make_category()
@@ -145,6 +164,36 @@ class OrderCreateTests(APITestCase):
     def test_order_missing_required_fields_400(self):
         response = self.client.post(reverse('order-list-create'), {}, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_order_quantity_over_max_400(self):
+        # Регресс на находку код-ревью №2: без верхней границы астрономический
+        # quantity приводил к OverflowError -> 500 при bulk_create в SQLite.
+        payload = self._payload(items=[{'product_slug': 'krovat-1', 'quantity': 99999999999999999999}])
+        response = self.client.post(reverse('order-list-create'), payload, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn('items', response.data)
+        self.assertEqual(Order.objects.count(), 0)
+
+    def test_order_quantity_above_business_limit_400(self):
+        payload = self._payload(items=[{'product_slug': 'krovat-1', 'quantity': 101}])
+        response = self.client.post(reverse('order-list-create'), payload, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_order_quantity_at_business_limit_allowed(self):
+        payload = self._payload(items=[{'product_slug': 'krovat-1', 'quantity': 100}])
+        response = self.client.post(reverse('order-list-create'), payload, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    def test_order_creation_is_atomic_on_item_failure(self):
+        # Регресс на находку №7: если создание позиций упадёт, "заказ-призрак"
+        # без позиций не должен оставаться в БД.
+        from unittest.mock import patch
+
+        payload = self._payload()
+        with patch('orders.serializers.OrderItem.objects.bulk_create', side_effect=RuntimeError('boom')):
+            with self.assertRaises(RuntimeError):
+                self.client.post(reverse('order-list-create'), payload, format='json')
+        self.assertEqual(Order.objects.count(), 0)
 
 
 class OrderListTests(APITestCase):

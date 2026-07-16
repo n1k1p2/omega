@@ -23,7 +23,7 @@ export function WhyOmega() {
             <div className="relative flex h-14 w-14 items-center justify-center rounded-full" style={{ background: "var(--gradient-brass-glow)" }}>
               <CalendarCheck className="text-[var(--color-accent)]" size={28} />
             </div>
-            <AnimatedCounter target={13} suffix="+ лет" className="font-display text-[30px] font-bold md:text-[40px]" />
+            <AnimatedCounter target={13} suffix="+ лет" duration={600} className="font-display text-[30px] font-bold md:text-[40px]" />
             <p className="text-sm text-[var(--color-foreground-muted)]">на рынке (с 2013 года)</p>
           </RevealItem>
 
@@ -31,8 +31,8 @@ export function WhyOmega() {
             <div className="relative flex h-14 w-14 items-center justify-center rounded-full" style={{ background: "var(--gradient-brass-glow)" }}>
               <LayoutGrid className="text-[var(--color-accent)]" size={28} />
             </div>
-            <AnimatedCounter target={101} suffix="" className="font-display text-[30px] font-bold md:text-[40px]" />
-            <p className="text-sm text-[var(--color-foreground-muted)]">модель в каталоге, 5 категорий</p>
+            <AnimatedCounter target={101} suffix="" duration={1200} className="font-display text-[30px] font-bold md:text-[40px]" />
+            <p className="text-sm text-[var(--color-foreground-muted)]">моделей, 5 категорий</p>
           </RevealItem>
 
           <RevealItem className="flex flex-col items-center gap-3 rounded-[var(--radius-lg)] bg-[var(--color-surface)] p-6 text-center shadow-[var(--shadow-sm)]">

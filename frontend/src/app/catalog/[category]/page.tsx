@@ -82,7 +82,12 @@ export default async function CategoryPage({
       {res.results.length === 0 ? (
         <EmptyState description="В этой категории с такими фильтрами товаров не нашлось. Попробуйте изменить цену или посмотрите весь каталог." />
       ) : (
-        <LoadMoreProducts initialProducts={res.results} hasNext={!!res.next} params={listParams} />
+        <LoadMoreProducts
+          key={JSON.stringify(listParams)}
+          initialProducts={res.results}
+          hasNext={!!res.next}
+          params={listParams}
+        />
       )}
     </div>
   );

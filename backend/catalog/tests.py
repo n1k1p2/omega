@@ -1,3 +1,6 @@
+from django.test import override_settings
+from django.test.utils import CaptureQueriesContext
+from django.db import connection
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
@@ -141,6 +144,22 @@ class ProductListTests(APITestCase):
         self.assertEqual(len(response.data['results']), 24)
         self.assertIsNotNone(response.data['next'])
 
+    def test_list_does_not_n_plus_1_on_rating_and_reviews_count(self):
+        # Регресс на находку код-ревью №3: rating/reviews_count не должны
+        # добавлять по 2 доп. запроса на товар (было 2N+const).
+        for i in range(10):
+            p = make_product(self.krovati, slug=f'n1-{i}', name=f'N1 товар {i}', price=1000 + i)
+            for j in range(3):
+                Review.objects.create(
+                    product=p, author='А', rating=5, text='Текст', status=Review.Status.APPROVED,
+                )
+        with CaptureQueriesContext(connection) as ctx:
+            response = self.client.get(reverse('product-list'))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        # Константное число запросов независимо от количества товаров:
+        # count + select products + prefetch reviews (+ page count query).
+        self.assertLess(len(ctx.captured_queries), 10)
+
 
 class ProductDetailTests(APITestCase):
     def setUp(self):
@@ -175,6 +194,17 @@ class ProductDetailTests(APITestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
         self.assertIn('detail', response.data)
+
+    def test_detail_related_does_not_n_plus_1(self):
+        # Регресс на находку код-ревью №9: get_related теперь использует
+        # select_related('category') + prefetch approved reviews.
+        for i in range(4, 8):
+            make_product(self.cat, slug=f'krovat-{i}', name=f'Кровать {i}', price=20000 + i)
+        url = reverse('product-detail', kwargs={'slug': 'krovat-1'})
+        with CaptureQueriesContext(connection) as ctx:
+            response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertLess(len(ctx.captured_queries), 10)
 
 
 class ReviewTests(APITestCase):
@@ -230,3 +260,29 @@ class ReviewTests(APITestCase):
         response = self.client.get(reverse('product-detail', kwargs={'slug': 'krovat-2'}))
         self.assertIsNone(response.data['rating'])
         self.assertEqual(response.data['reviews_count'], 0)
+
+
+class ReviewThrottleTests(APITestCase):
+    """Регресс на находку код-ревью №5: POST /reviews/ троттлится, GET — нет."""
+
+    def setUp(self):
+        from django.core.cache import cache
+        cache.clear()
+        self.cat = make_category()
+        self.product = make_product(self.cat, slug='krovat-1', name='Кровать 1')
+
+    def tearDown(self):
+        from django.core.cache import cache
+        cache.clear()
+
+    def test_review_post_is_rate_limited(self):
+        payload = {'product_slug': 'krovat-1', 'author': 'Иван', 'rating': 5, 'text': 'Текст отзыва'}
+        last_response = None
+        for _ in range(11):
+            last_response = self.client.post(reverse('review-list-create'), payload, format='json')
+        self.assertEqual(last_response.status_code, status.HTTP_429_TOO_MANY_REQUESTS)
+
+    def test_review_get_is_not_rate_limited(self):
+        for _ in range(15):
+            response = self.client.get(reverse('review-list-create'), {'product': 'krovat-1'})
+            self.assertEqual(response.status_code, status.HTTP_200_OK)

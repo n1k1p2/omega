@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Wand2 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { HeroTextColumn, HeroItem, HeroPhotoColumn } from "./HeroMotion";
+import { HeroQuizLink } from "./HeroQuizLink";
 
 /**
  * Hero — правка В11 (обязательная): весь текстовый блок виден в чистой
@@ -54,12 +55,12 @@ export function Hero() {
                 Выбрать мебель
               </Button>
             </Link>
-            <Link href="/catalog">
+            <HeroQuizLink>
               <Button variant="secondary" size="l" fullWidth className="sm:w-auto">
                 <Wand2 size={18} />
                 Подобрать за 1 минуту
               </Button>
-            </Link>
+            </HeroQuizLink>
           </HeroItem>
 
           <HeroItem as="ul" className="mt-2 flex flex-col gap-1.5 text-sm text-[var(--color-foreground-muted)] sm:flex-row sm:flex-wrap sm:gap-x-4 sm:gap-y-1">

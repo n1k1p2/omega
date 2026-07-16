@@ -21,6 +21,9 @@ export default function CheckoutSuccessPage() {
       const raw = sessionStorage.getItem("omega_last_order");
       // eslint-disable-next-line react-hooks/set-state-in-effect
       if (raw) setOrder(JSON.parse(raw));
+      // одноразовое чтение: при повторном заходе (history back/forward)
+      // старый заказ не должен выглядеть подтверждением нового действия
+      sessionStorage.removeItem("omega_last_order");
     } catch {
       // нет сохранённого заказа — покажем общее сообщение об успехе
     } finally {

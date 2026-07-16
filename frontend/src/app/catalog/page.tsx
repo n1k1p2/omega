@@ -52,7 +52,12 @@ export default async function CatalogPage({
       {res.results.length === 0 ? (
         <EmptyState />
       ) : (
-        <LoadMoreProducts initialProducts={res.results} hasNext={!!res.next} params={listParams} />
+        <LoadMoreProducts
+          key={JSON.stringify(listParams)}
+          initialProducts={res.results}
+          hasNext={!!res.next}
+          params={listParams}
+        />
       )}
     </div>
   );

@@ -9,6 +9,7 @@ class RegisterView(generics.CreateAPIView):
     """POST /api/v1/auth/register/ -> 201 {"id","email","first_name"}"""
     serializer_class = RegisterSerializer
     permission_classes = (permissions.AllowAny,)
+    throttle_scope = 'auth-register'
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -24,6 +25,7 @@ class EmailTokenObtainPairView(TokenObtainPairView):
     """POST /api/v1/auth/token/ {"email","password"} -> {"access","refresh"}"""
     serializer_class = EmailTokenObtainPairSerializer
     permission_classes = (permissions.AllowAny,)
+    throttle_scope = 'auth-token'
 
 
 class MeView(generics.RetrieveUpdateAPIView):

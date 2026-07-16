@@ -1,3 +1,4 @@
+from django.db.models import Prefetch
 from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 
@@ -40,7 +41,13 @@ class ProductListView(generics.ListAPIView):
     permission_classes = (permissions.AllowAny,)
 
     def get_queryset(self):
-        qs = Product.objects.select_related('category').prefetch_related('reviews')
+        qs = Product.objects.select_related('category').prefetch_related(
+            Prefetch(
+                'reviews',
+                queryset=Review.objects.filter(status=Review.Status.APPROVED),
+                to_attr='approved_reviews_prefetch',
+            ),
+        )
         ordering = self.request.query_params.get('ordering')
         if ordering in ORDERING_MAP:
             qs = qs.order_by(ORDERING_MAP[ordering], 'id')
@@ -57,7 +64,13 @@ class ProductDetailView(generics.RetrieveAPIView):
     permission_classes = (permissions.AllowAny,)
 
     def get_queryset(self):
-        return Product.objects.select_related('category').prefetch_related('reviews')
+        return Product.objects.select_related('category').prefetch_related(
+            Prefetch(
+                'reviews',
+                queryset=Review.objects.filter(status=Review.Status.APPROVED),
+                to_attr='approved_reviews_prefetch',
+            ),
+        )
 
 
 class ReviewListCreateView(generics.ListCreateAPIView):
@@ -67,6 +80,13 @@ class ReviewListCreateView(generics.ListCreateAPIView):
     """
 
     permission_classes = (permissions.AllowAny,)
+    throttle_scope = 'reviews-write'
+
+    def get_throttles(self):
+        # Троттлим только запись отзывов (POST), список (GET) остаётся без лимита.
+        if self.request.method != 'POST':
+            return []
+        return super().get_throttles()
 
     def get_serializer_class(self):
         if self.request.method == 'POST':

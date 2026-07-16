@@ -50,15 +50,21 @@ export default async function ProductPage({ params }: { params: Promise<PagePara
     image: product.images,
     sku: `OM-${product.id}`,
     brand: { "@type": "Brand", name: "Мебель Омега" },
-    offers: {
-      "@type": "Offer",
-      priceCurrency: "RUB",
-      price: product.price ?? undefined,
-      availability: product.in_stock
-        ? "https://schema.org/InStock"
-        : "https://schema.org/PreOrder",
-      url: `https://mebel-omega.ru/product/${product.slug}`,
-    },
+    // Offer без обязательного поля price — ошибка структурированных данных,
+    // поэтому для товаров «цена по запросу» блок offers не выводим вовсе
+    ...(product.price
+      ? {
+          offers: {
+            "@type": "Offer",
+            priceCurrency: "RUB",
+            price: product.price,
+            availability: product.in_stock
+              ? "https://schema.org/InStock"
+              : "https://schema.org/PreOrder",
+            url: `https://mebel-omega.ru/product/${product.slug}`,
+          },
+        }
+      : {}),
     ...(product.rating != null
       ? {
           aggregateRating: {

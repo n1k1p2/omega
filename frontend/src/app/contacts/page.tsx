@@ -51,6 +51,18 @@ export default function ContactsPage() {
           <p className="mt-2 text-sm text-[var(--color-foreground-muted)]">
             ООО «Мебель Омега» · ОГРН 1133702026468 · производство полного цикла в Ивановской области
           </p>
+
+          <div className="mt-2 overflow-hidden rounded-[var(--radius-lg)] border border-[var(--color-border)]">
+            <iframe
+              title="Фабрика «Омега» на карте — г. Юрьевец, Ивановская область"
+              src="https://yandex.ru/map-widget/v1/?text=Ивановская%20область%2C%20г.%20Юрьевец&z=13"
+              width="100%"
+              height="320"
+              loading="lazy"
+              style={{ border: 0, display: "block" }}
+              referrerPolicy="no-referrer-when-downgrade"
+            />
+          </div>
         </div>
 
         <div className="rounded-[var(--radius-xl)] bg-[var(--color-background-alt)] p-6 md:p-8">

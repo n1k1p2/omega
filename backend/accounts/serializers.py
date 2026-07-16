@@ -15,7 +15,7 @@ class RegisterSerializer(serializers.ModelSerializer):
         fields = ('id', 'email', 'password', 'first_name', 'phone')
 
     def validate_email(self, value):
-        value = User.objects.normalize_email(value)
+        value = User.objects.normalize_email(value).lower()
         if User.objects.filter(email__iexact=value).exists():
             raise serializers.ValidationError('Пользователь с таким email уже зарегистрирован.')
         return value

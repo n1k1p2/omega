@@ -52,7 +52,8 @@ export function QuizPicker() {
     <section className="py-16 md:py-24">
       <div className="container-omega">
         <Reveal
-          className="overflow-hidden rounded-[var(--radius-xl)] bg-[var(--color-surface)] p-6 md:p-12"
+          id="quiz-picker"
+          className="overflow-hidden rounded-[var(--radius-xl)] bg-[var(--color-surface)] p-6 md:p-12 scroll-mt-24"
           duration={0.7}
           style={{ boxShadow: "var(--shadow-glow-amber)" }}
         >

@@ -1,5 +1,8 @@
+from django.db.models import Prefetch
 from rest_framework import generics, permissions, status
 from rest_framework.response import Response
+
+from catalog.models import Review
 
 from .models import Callback, Order
 from .serializers import CallbackSerializer, OrderCreateSerializer, OrderListSerializer
@@ -10,6 +13,7 @@ class CallbackCreateView(generics.CreateAPIView):
 
     serializer_class = CallbackSerializer
     permission_classes = (permissions.AllowAny,)
+    throttle_scope = 'callbacks'
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -39,7 +43,14 @@ class OrderListCreateView(generics.ListCreateAPIView):
     def get_queryset(self):
         return (
             Order.objects.filter(user=self.request.user)
-            .prefetch_related('items__product__category')
+            .prefetch_related(
+                'items__product__category',
+                Prefetch(
+                    'items__product__reviews',
+                    queryset=Review.objects.filter(status=Review.Status.APPROVED),
+                    to_attr='approved_reviews_prefetch',
+                ),
+            )
             .order_by('-created_at')
         )
 

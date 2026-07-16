@@ -3,17 +3,19 @@
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Ruler } from "lucide-react";
+import { Ruler, Zap } from "lucide-react";
 import type { ProductCard as ProductCardType } from "@/types/catalog";
 import { Badge } from "@/components/ui/Badge";
 import { Rating } from "@/components/ui/Rating";
 import { ColorSwatches } from "@/components/ui/ColorSwatches";
 import { formatPriceFrom } from "@/lib/format";
 import { useModals } from "@/context/ModalContext";
+import { useCart } from "@/context/CartContext";
 
 export function ProductCard({ product }: { product: ProductCardType }) {
   const [hovered, setHovered] = useState(false);
   const { openOneClick } = useModals();
+  const { addItem } = useCart();
 
   return (
     <div
@@ -100,20 +102,40 @@ export function ProductCard({ product }: { product: ProductCardType }) {
           </div>
         </div>
 
-        <button
-          onClick={(e) => {
-            e.preventDefault();
-            openOneClick({
-              productSlug: product.slug,
-              productName: product.name,
-              productImage: product.image,
-              price: product.price,
-            });
-          }}
-          className="mt-1 h-11 w-full cursor-pointer rounded-[var(--radius-md)] bg-[var(--color-primary)] text-sm font-semibold text-white transition-all duration-200 hover:bg-[var(--color-primary-hover)] active:scale-[0.98] sm:bg-[var(--color-surface-sunken)] sm:text-[var(--color-foreground)] sm:group-hover:bg-[var(--color-primary)] sm:group-hover:text-white"
-        >
-          Заказать
-        </button>
+        <div className="mt-1 flex items-center gap-2">
+          <button
+            onClick={(e) => {
+              e.preventDefault();
+              if (product.price == null) return;
+              addItem({
+                slug: product.slug,
+                name: product.name,
+                price: product.price,
+                image: product.image,
+              });
+            }}
+            className="h-11 flex-1 cursor-pointer rounded-[var(--radius-md)] bg-[var(--color-primary)] text-sm font-semibold text-white transition-all duration-200 hover:bg-[var(--color-primary-hover)] active:scale-[0.98] sm:bg-[var(--color-surface-sunken)] sm:text-[var(--color-foreground)] sm:group-hover:bg-[var(--color-primary)] sm:group-hover:text-white"
+          >
+            Заказать
+          </button>
+          <button
+            onClick={(e) => {
+              e.preventDefault();
+              openOneClick({
+                productSlug: product.slug,
+                productName: product.name,
+                productImage: product.image,
+                price: product.price,
+              });
+            }}
+            aria-label="Купить в 1 клик"
+            title="Купить в 1 клик"
+            className="flex h-11 shrink-0 cursor-pointer items-center gap-1.5 rounded-[var(--radius-md)] border-[1.5px] border-[var(--color-accent)] px-3 text-sm font-semibold text-[var(--color-foreground)] transition-all duration-200 hover:bg-[var(--color-accent)]/10 active:scale-[0.98]"
+          >
+            <Zap size={16} className="text-[var(--color-accent)]" />
+            <span className="hidden sm:inline">В 1 клик</span>
+          </button>
+        </div>
       </div>
     </div>
   );

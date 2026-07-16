@@ -1,17 +1,33 @@
 """
 Django settings for config project (Фабрика «Омега» — backend).
+
+Prod-секреты берутся из переменных окружения. Дефолты сохраняют ТЕКУЩЕЕ
+поведение локальной разработки один в один (DEBUG=True, тот же SECRET_KEY,
+ALLOWED_HOSTS=['*']) — если переменные окружения не заданы, ничего не
+меняется. Перед реальным продакшен-деплоем нужно явно выставить:
+  DJANGO_DEBUG=False
+  DJANGO_SECRET_KEY=<новый сгенерированный ключ>
+  DJANGO_ALLOWED_HOSTS=<домен1,домен2>
 """
 
+import os
 from datetime import timedelta
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = 'django-insecure--age2e=p3g1jdkmfskw91m$+ve!^&e666be6onfsso0i4g@vhq'
+SECRET_KEY = os.environ.get(
+    'DJANGO_SECRET_KEY',
+    'django-insecure--age2e=p3g1jdkmfskw91m$+ve!^&e666be6onfsso0i4g@vhq',
+)
 
-DEBUG = True
+DEBUG = os.environ.get('DJANGO_DEBUG', 'True') == 'True'
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = (
+    os.environ['DJANGO_ALLOWED_HOSTS'].split(',')
+    if os.environ.get('DJANGO_ALLOWED_HOSTS')
+    else ['*']
+)
 
 
 # Application definition
@@ -129,6 +145,15 @@ REST_FRAMEWORK = {
         'rest_framework.renderers.JSONRenderer',
     ),
     'EXCEPTION_HANDLER': 'config.exceptions.custom_exception_handler',
+    'DEFAULT_THROTTLE_CLASSES': (
+        'rest_framework.throttling.ScopedRateThrottle',
+    ),
+    'DEFAULT_THROTTLE_RATES': {
+        'callbacks': '10/min',
+        'reviews-write': '10/min',
+        'auth-register': '10/min',
+        'auth-token': '10/min',
+    },
 }
 
 SIMPLE_JWT = {
@@ -142,9 +167,15 @@ SIMPLE_JWT = {
 
 
 # CORS
-CORS_ALLOWED_ORIGINS = [
-    'http://localhost:3000',
-]
+# :3000 — Next.js production; :3005 — окружение, которое смотрит заказчик (см. docs/review-ux.md).
+CORS_ALLOWED_ORIGINS = (
+    os.environ['DJANGO_CORS_ALLOWED_ORIGINS'].split(',')
+    if os.environ.get('DJANGO_CORS_ALLOWED_ORIGINS')
+    else [
+        'http://localhost:3000',
+        'http://localhost:3005',
+    ]
+)
 
 
 # Admin branding

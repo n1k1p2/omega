@@ -48,6 +48,7 @@ interface RevealProps {
   children: ReactNode;
   className?: string;
   style?: CSSProperties;
+  id?: string;
   direction?: RevealDirection;
   delay?: number;
   duration?: number;
@@ -60,6 +61,7 @@ export function Reveal({
   children,
   className,
   style,
+  id,
   direction = "up",
   delay = 0,
   duration = 0.6,
@@ -90,6 +92,7 @@ export function Reveal({
 
   return (
     <MotionTag
+      id={id}
       className={className}
       style={style}
       initial={false}

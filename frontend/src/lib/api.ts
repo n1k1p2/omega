@@ -48,6 +48,35 @@ export class ApiUnavailableError extends Error {
   }
 }
 
+/**
+ * Валидационная ошибка от DRF (HTTP 400) — данные конкретны (например,
+ * "неверный формат телефона"), сервис при этом доступен и работает.
+ * Отличается от ApiUnavailableError: UI должен показать `fieldErrors`
+ * рядом с полями формы, а не общее "звоните нам" (см. правку по код-ревью).
+ */
+export class ApiValidationError extends Error {
+  fieldErrors: Record<string, string>;
+  constructor(fieldErrors: Record<string, string>, message = "Проверьте правильность заполнения формы") {
+    super(message);
+    this.name = "ApiValidationError";
+    this.fieldErrors = fieldErrors;
+  }
+}
+
+function flattenDrfErrors(body: unknown): Record<string, string> {
+  const out: Record<string, string> = {};
+  if (body && typeof body === "object") {
+    for (const [key, value] of Object.entries(body as Record<string, unknown>)) {
+      if (Array.isArray(value)) {
+        out[key] = value.map(String).join(" ");
+      } else if (typeof value === "string") {
+        out[key] = value;
+      }
+    }
+  }
+  return out;
+}
+
 async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), TIMEOUT_MS);
@@ -61,6 +90,20 @@ async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
       },
     });
     if (!res.ok) {
+      // 400 — валидационная ошибка DRF: сервис жив, данные некорректны.
+      // Пробрасываем отдельным типом ошибки, чтобы UI показал конкретное
+      // поле с ошибкой, а не общее "сервис недоступен, позвоните".
+      if (res.status === 400) {
+        let body: unknown = null;
+        try {
+          body = await res.json();
+        } catch {
+          // не JSON — не сможем разобрать поля, упадём в общую ветку ниже
+        }
+        if (body) {
+          throw new ApiValidationError(flattenDrfErrors(body));
+        }
+      }
       let detail = `HTTP ${res.status}`;
       try {
         const body = await res.json();

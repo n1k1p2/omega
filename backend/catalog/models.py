@@ -74,17 +74,28 @@ class Product(models.Model):
     def image_hover(self):
         return self.images[1] if len(self.images) > 1 else None
 
+    def _approved_reviews(self):
+        """
+        Возвращает одобренные отзывы. Если queryset был заранее загружен через
+        Prefetch(..., to_attr='approved_reviews_prefetch') — использует кэш без
+        доп. запроса к БД. Иначе — фолбэк на прямой запрос (например, в тестах,
+        которые создают Product без prefetch).
+        """
+        if 'approved_reviews_prefetch' in self.__dict__:
+            return self.approved_reviews_prefetch
+        return list(self.reviews.filter(status=Review.Status.APPROVED))
+
     @property
     def rating(self):
-        approved = self.reviews.filter(status=Review.Status.APPROVED)
-        if not approved.exists():
+        approved = self._approved_reviews()
+        if not approved:
             return None
-        agg = approved.aggregate(avg=models.Avg('rating'))
-        return round(agg['avg'], 1) if agg['avg'] is not None else None
+        avg = sum(r.rating for r in approved) / len(approved)
+        return round(avg, 1)
 
     @property
     def reviews_count(self):
-        return self.reviews.filter(status=Review.Status.APPROVED).count()
+        return len(self._approved_reviews())
 
 
 class Review(models.Model):

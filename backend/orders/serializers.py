@@ -1,3 +1,4 @@
+from django.db import transaction
 from rest_framework import serializers
 
 from catalog.models import Product
@@ -29,7 +30,7 @@ class CallbackSerializer(serializers.ModelSerializer):
 
 class OrderItemInputSerializer(serializers.Serializer):
     product_slug = serializers.SlugField()
-    quantity = serializers.IntegerField(min_value=1, default=1)
+    quantity = serializers.IntegerField(min_value=1, max_value=100, default=1)
     size = serializers.CharField(required=False, allow_blank=True, default='')
     color = serializers.CharField(required=False, allow_blank=True, default='')
 
@@ -62,25 +63,26 @@ class OrderCreateSerializer(serializers.ModelSerializer):
         if request is not None and request.user and request.user.is_authenticated:
             user = request.user
 
-        order = Order.objects.create(user=user, **validated_data)
+        with transaction.atomic():
+            order = Order.objects.create(user=user, **validated_data)
 
-        products_by_slug = {
-            p.slug: p for p in Product.objects.filter(
-                slug__in=[item['product_slug'] for item in items_data]
-            )
-        }
-        order_items = []
-        for item in items_data:
-            product = products_by_slug[item['product_slug']]
-            order_items.append(OrderItem(
-                order=order,
-                product=product,
-                quantity=item['quantity'],
-                price=product.price,  # цена ИЗ БАЗЫ, не с клиента
-                size=item.get('size', ''),
-                color=item.get('color', ''),
-            ))
-        OrderItem.objects.bulk_create(order_items)
+            products_by_slug = {
+                p.slug: p for p in Product.objects.filter(
+                    slug__in=[item['product_slug'] for item in items_data]
+                )
+            }
+            order_items = []
+            for item in items_data:
+                product = products_by_slug[item['product_slug']]
+                order_items.append(OrderItem(
+                    order=order,
+                    product=product,
+                    quantity=item['quantity'],
+                    price=product.price,  # цена ИЗ БАЗЫ, не с клиента
+                    size=item.get('size', ''),
+                    color=item.get('color', ''),
+                ))
+            OrderItem.objects.bulk_create(order_items)
         return order
 
     def to_representation(self, instance):
